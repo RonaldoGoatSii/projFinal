@@ -95,13 +95,14 @@ class Produto {
         this.preco = preco;
         this.fabricante = fabricante;
         this.categoria = categoria;
-        this.numeroMaximoParcelas  =numeroMaximoParcelas
+        this.numeroMaximoParcelas = numeroMaximoParcelas
 		throw new Error("TODO: implementar Produto");
 	}
 
 	getValorDeParcela(numeroDeParcelas) {
         if(numeroDeParcelas >=1 && numeroDeParcelas <= this.numeroMaximoParcelas){
             const parcelas = this.preco / numeroDeParcelas 
+            conaole.log(parcelas)
         }
 		throw new Error("TODO: implementar getValorDeParcela");
 	}
@@ -134,7 +135,7 @@ class Cliente {
 	}
 
 	resgatarPontos(pontos) {
-		
+		pontos =- 1;
 		throw new Error("TODO: implementar resgatarPontos");
 	}
 }
@@ -147,15 +148,28 @@ class Cliente {
 // Observação: o carrinho usa precoUnitario do momento (para simular mudança de preço no catálogo).
 
 class ItemCarrinho {
-	constructor({ sku, quantidade, precoUnitario }) {
-		this.sku = sku;
+		constructor({ sku, quantidade, precoUnitario }) {
+
+        if (typeof sku !== 'string' || sku.trim() === "") {
+            throw new Error("SKU inválido: deve ser um texto não vazio.");
+        }
+
+        if (!Number.isInteger(quantidade) || quantidade < 1) {
+            throw new Error("Quantidade inválida: deve ser um inteiro maior ou igual a 1.");
+        }
+
+        if (typeof precoUnitario !== 'number' || precoUnitario <= 0) {
+            throw new Error("Preço unitário inválido: deve ser um número maior que zero.");
+        }
+
+        this.sku = sku;
         this.quantidade = quantidade;
         this.precoUnitario = precoUnitario;
+    }
 
-	}
-
-	getTotal() {
-		// TODO
+getTotal() {
+    const total = this.quantidade * this.precoUnitario;
+    return Number(total.toFixed(2));
 
 	}
 }
@@ -172,7 +186,7 @@ class ItemCarrinho {
 
 class Estoque {
 	constructor() {
-		// TODO
+		
 		throw new Error("TODO: implementar Estoque");
 	}
 
