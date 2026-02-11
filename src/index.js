@@ -264,8 +264,9 @@ class Catalogo {
 
 class CarrinhoDeCompras {
 	constructor({ catalogo, estoque }) {
-		// TODO
-		throw new Error("TODO: implementar CarrinhoDeCompras");
+        const compras = new Map()
+        
+        throw new Error("TODO: implementar CarrinhoDeCompras");
 	}
 
 	adicionarItem(sku, quantidade) {
