@@ -152,7 +152,7 @@ class ItemCarrinho {
 
         if (typeof sku !== 'string' || sku.trim() === "") {
             throw new Error("SKU inválido: deve ser um texto não vazio.");
-        }
+        } 
 
         if (!Number.isInteger(quantidade) || quantidade < 1) {
             throw new Error("Quantidade inválida: deve ser um inteiro maior ou igual a 1.");
@@ -186,33 +186,52 @@ getTotal() {
 
 class Estoque {
 	constructor() {
-		
+		this.map = new Map();
 		throw new Error("TODO: implementar Estoque");
 	}
 
 	definirQuantidade(sku, quantidade) {
-		// TODO
-		throw new Error("TODO: implementar definirQuantidade");
+		if (quantidade < 1){
+			throw new Error("TODO: implementar definirQuantidade");
+		}
+		this.map.set(sku, quantidade);
+
+		
 	}
 
 	adicionar(sku, quantidade) {
-		// TODO
-		throw new Error("TODO: implementar adicionar");
+		if (quantidade < 0){
+			throw new Error("TODO: implementar adicionar");
+		}
+		let.quantidadeAtual = this.map.set(sku) || 0;
+		this.map.set(sku, quantidadeAtual + quantidade)
 	}
 
 	remover(sku, quantidade) {
-		// TODO
-		throw new Error("TODO: implementar remover");
-	}
+
+		if (quantidade <= 0) {
+            throw new Error("A quantidade a remover deve ser positiva.");
+        }
+
+        const quantidadeAtual = this.getQuantidade(sku);  
+
+        if (quantidadeAtual < quantidade) {
+            throw new Error(`Estoque insuficiente para ${sku}. Atual: ${quantidadeAtual}, Solicitado: ${quantidade}`);
+        }
+
+        this.map.set(sku, quantidadeAtual - quantidade);
+	} 
 
 	getQuantidade(sku) {
-		// TODO
+		return this.map.get(sku);
 		throw new Error("TODO: implementar getQuantidade");
 	}
 
 	garantirDisponibilidade(sku, quantidade) {
-		// TODO
-		throw new Error("TODO: implementar garantirDisponibilidade");
+		const disponivel = this.getQuantidade(sku)
+		if (disponivel < quantidade){
+			throw new Error("TODO: implementar garantirDisponibilidade");
+		}
 	}
 }
 
@@ -227,12 +246,12 @@ class Estoque {
 
 class Catalogo {
 	constructor() {
-		// TODO
+		this.map = new Map()
 		throw new Error("TODO: implementar Catalogo");
 	}
 
 	adicionarProduto(produto) {
-		// TODO
+		
 		throw new Error("TODO: implementar adicionarProduto");
 	}
 
@@ -264,13 +283,13 @@ class Catalogo {
 
 class CarrinhoDeCompras {
 	constructor({ catalogo, estoque }) {
-        const compras = new Map()
+
         
         throw new Error("TODO: implementar CarrinhoDeCompras");
 	}
 
 	adicionarItem(sku, quantidade) {
-		// TODO
+		
 		throw new Error("TODO: implementar adicionarItem");
 	}
 
