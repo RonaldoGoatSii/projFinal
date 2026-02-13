@@ -102,7 +102,7 @@ class Produto {
 	getValorDeParcela(numeroDeParcelas) {
         if(numeroDeParcelas >=1 && numeroDeParcelas <= this.numeroMaximoParcelas){
             const parcelas = this.preco / numeroDeParcelas 
-            conaole.log(parcelas)
+            console.log(parcelas)
         }
 		throw new Error("TODO: implementar getValorDeParcela");
 	}
@@ -187,11 +187,10 @@ getTotal() {
 class Estoque {
 	constructor() {
 		this.map = new Map();
-		throw new Error("TODO: implementar Estoque");
 	}
 
 	definirQuantidade(sku, quantidade) {
-		if (quantidade < 1){
+		if (quantidade <= 0){
 			throw new Error("TODO: implementar definirQuantidade");
 		}
 		this.map.set(sku, quantidade);
@@ -246,28 +245,50 @@ class Estoque {
 
 class Catalogo {
 	constructor() {
-		this.map = new Map()
-		throw new Error("TODO: implementar Catalogo");
+		this.map = new Map();
 	}
 
 	adicionarProduto(produto) {
+
+		if (!produto || !produto.sku) {
+			throw new Error("Produto inválido: não é possível adicionar ao catálogo sem um SKU.");
+		}
 		
-		throw new Error("TODO: implementar adicionarProduto");
+		
+		this.map.set(produto.sku, produto);
 	}
 
 	getProduto(sku) {
-		// TODO
-		throw new Error("TODO: implementar getProduto");
+	
+		if (!this.map.has(sku)) {
+			throw new Error(`Produto com SKU '${sku}' não encontrado no catálogo.`);
+		}
+		
+	
+		return this.map.get(sku);
 	}
 
 	listarPorCategoria(categoria) {
-		// TODO
-		throw new Error("TODO: implementar listarPorCategoria");
+		const produtosFiltrados = [];
+
+		for (const produto of this.map.values()) {
+			if (produto.categoria === categoria) {
+				produtosFiltrados.push(produto);
+			}
+		}
+
+		return produtosFiltrados;
 	}
 
 	atualizarPreco(sku, novoPreco) {
-		// TODO
-		throw new Error("TODO: implementar atualizarPreco");
+
+		const produto = this.getProduto(sku);
+
+		if (novoPreco <= 0) {
+			throw new Error("O preço do produto deve ser um valor positivo.");
+		}
+
+		produto.preco = novoPreco;
 	}
 }
 
@@ -282,36 +303,71 @@ class Catalogo {
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 
 class CarrinhoDeCompras {
-	constructor({ catalogo, estoque }) {
+    constructor({ catalogo, estoque }) {
+        this.catalogo = catalogo;
+        this.estoque = estoque;
+        this.map = new Map(); 
+    }
 
-        
-        throw new Error("TODO: implementar CarrinhoDeCompras");
-	}
+    adicionarItem(sku, quantidade) {
 
-	adicionarItem(sku, quantidade) {
-		
-		throw new Error("TODO: implementar adicionarItem");
-	}
+        if (quantidade <= 0) {
+            throw new Error("A quantidade deve ser maior que zero.");
+        }
 
-	removerItem(sku) {
-		// TODO
-		throw new Error("TODO: implementar removerItem");
-	}
+        let quantidadeNoCarrinho = 0;
+        if (this.map.has(sku)) {
+            quantidadeNoCarrinho = this.map.get(sku).quantidade;
+        }
 
-	alterarQuantidade(sku, novaQuantidade) {
-		// TODO
-		throw new Error("TODO: implementar alterarQuantidade");
-	}
+        const quantidadeTotalDesejada = quantidadeNoCarrinho + quantidade;
 
-	listarItens() {
-		// TODO
-		throw new Error("TODO: implementar listarItens");
-	}
 
-	getSubtotal() {
-		// TODO
-		throw new Error("TODO: implementar getSubtotal");
-	}
+        this.estoque.garantirDisponibilidade(sku, quantidadeTotalDesejada);
+
+        const produto = this.catalogo.getProduto(sku);
+
+
+        this.map.set(sku, {
+            produto,
+            quantidade: quantidadeTotalDesejada
+        });
+    }
+
+    removerItem(sku) {
+        if (!this.map.has(sku)) {
+            throw new Error("Item não encontrado no carrinho.");
+        }
+        this.map.delete(sku);
+    }
+
+    alterarQuantidade(sku, novaQuantidade) {
+        if (novaQuantidade <= 0) {
+            return this.removerItem(sku);
+        }
+
+        this.estoque.garantirDisponibilidade(sku, novaQuantidade);
+
+        const item = this.map.get(sku);
+        if (!item) {
+            throw new Error("Produto não está no carrinho. Use adicionarItem.");
+        }
+
+        item.quantidade = novaQuantidade;
+    }
+
+    listarItens() {
+        return Array.from(this.map.values());
+    }
+
+    getSubtotal() {
+        let total = 0;
+
+        for (const item of this.map.values()) {
+            total += item.produto.preco * item.quantidade;
+        }
+        return total;
+    }
 }
 
 // ==========================================
