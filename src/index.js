@@ -426,12 +426,21 @@ class CarrinhoDeCompras {
 
 class MotorDePrecos {
 	constructor({ catalogo }) {
-		// TODO
-		throw new Error("TODO: implementar MotorDePrecos");
-	}
+		this.catalogo = catalogo;	
+		}
 
+	getPreco(){
+		const breakdown = {
+			subtotal,
+			descontos: [{codigo, descricao, valor}],	
+			totalDescontos,
+			impostoPorCategoria: [{categoria: valor}],
+			frete,
+			total
+		}
+	}
+	
 	calcular({ cliente, itens, cupomCodigo }) {
-		// TODO
 		throw new Error("TODO: implementar calcular");
 	}
 }
@@ -494,7 +503,7 @@ class CaixaRegistradora {
 // Deve gerar texto em linhas (array de strings) contendo:
 // - cabeçalho
 // - itens: sku, quantidade, preço unitário, total do item
-// - subtotal, descontos (linha por desconto), impostos (por categoria), frete, total
+// - subtotal, descontos (linha por desconto), impostos (por categoria), frete, totalui 
 // - status do pedido
 
 class CupomFiscal {
