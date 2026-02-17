@@ -547,20 +547,28 @@ class MotorDePrecos {
 // - cancelar()
 
 class Pedido {
-	constructor({ id, clienteId, itens, breakdown }) {
-		// TODO
-		throw new Error("TODO: implementar Pedido");
-	}
+    constructor({ id, clienteId, itens, breakdown }) {
+        this.id = id;
+        this.clienteId = clienteId;
+        this.itens = itens;
+        this.breakdown = breakdown;
+        this.status = "ABERTO";
+        this.createdAt = new Date();
+    }
 
-	pagar() {
-		// TODO
-		throw new Error("TODO: implementar pagar");
-	}
+    pagar() {
+        if (this.status !== "ABERTO") {
+            throw new Error(`Não é possível pagar um pedido com status ${this.status}`);
+        }
+        this.status = "PAGO";
+    }
 
-	cancelar() {
-		// TODO
-		throw new Error("TODO: implementar cancelar");
-	}
+    cancelar() {
+        if (this.status !== "ABERTO") {
+            throw new Error(`Não é possível cancelar um pedido com status ${this.status}`);
+        }
+        this.status = "CANCELADO";
+    }
 }
 
 // 10) Crie a classe CaixaRegistradora
@@ -573,15 +581,44 @@ class Pedido {
 // - Deve somar parcelas por item e imprimir um resumo no cupom (opcional, mas recomendado)
 
 class CaixaRegistradora {
-	constructor({ catalogo, estoque, motorDePrecos }) {
-		// TODO
-		throw new Error("TODO: implementar CaixaRegistradora");
-	}
+    constructor({ catalogo, estoque, motorDePrecos }) {
+        this.catalogo = catalogo;
+        this.estoque = estoque;
+        this.motorDePrecos = motorDePrecos;
+        this.contadorPedidos = 1;
+    }
 
-	fecharCompra({ cliente, carrinho, cupomCodigo = null, numeroDeParcelas = 1 }) {
-		// TODO
-		throw new Error("TODO: implementar fecharCompra");
-	}
+    fecharCompra({ cliente, carrinho, cupomCodigo = null, numeroDeParcelas = 1 }) {
+        const itens = carrinho.listarItens();
+        
+        if (itens.length === 0) {
+            throw new Error("O carrinho está vazio.");
+        }
+
+        for (const item of itens) {
+            if (numeroDeParcelas > item.produto.numeroMaximoParcelas) {
+                throw new Error(`O produto ${item.produto.nome} permite no máximo ${item.produto.numeroMaximoParcelas} parcelas.`);
+            }
+        }
+        const breakdown = this.motorDePrecos.calcular({ cliente, itens, cupomCodigo });
+
+        for (const item of itens) {
+            this.estoque.remover(item.produto.sku, item.quantidade);
+        }
+
+        const novoPedido = new Pedido({
+            id: `PED-${this.contadorPedidos++}`,
+            clienteId: cliente.id,
+            itens: itens, 
+            breakdown: breakdown
+        });
+        novoPedido.breakdown.parcelasInfo = {
+            numero: numeroDeParcelas,
+            valorParcela: round2(breakdown.total / numeroDeParcelas)
+        };
+
+        return novoPedido;
+    }
 }
 
 // 11) Crie a classe CupomFiscal
