@@ -425,24 +425,109 @@ class CarrinhoDeCompras {
 // Onde itens é o resultado de carrinho.listarItens()
 
 class MotorDePrecos {
-	constructor({ catalogo }) {
-		this.catalogo = catalogo;	
-		}
+    constructor({ catalogo }) {
+        this.catalogo = catalogo;
+    }
 
-	getPreco(){
-		const breakdown = {
-			subtotal,
-			descontos: [{codigo, descricao, valor}],	
-			totalDescontos,
-			impostoPorCategoria: [{categoria: valor}],
-			frete,
-			total
-		}
-	}
-	
-	calcular({ cliente, itens, cupomCodigo }) {
-		throw new Error("TODO: implementar calcular");
-	}
+    calcular({ cliente, itens, cupomCodigo }) {
+        let subtotal = 0;
+        let totalImpostos = 0;
+        const descontos = []; 
+        const impostoPorCategoria = {};
+
+        const itensVestuario = [];
+
+        for (const item of itens) {
+            const valorLinha = item.produto.preco * item.quantidade;
+            subtotal += valorLinha;
+
+            const taxa = IVA_POR_CATEGORIA[item.produto.categoria] || 0;
+            const valorImposto = valorLinha * taxa;
+            
+
+            if (!impostoPorCategoria[item.produto.categoria]) {
+                impostoPorCategoria[item.produto.categoria] = 0;
+            }
+            impostoPorCategoria[item.produto.categoria] += valorImposto;
+            totalImpostos += valorImposto;
+
+            if (item.produto.categoria === "vestuário") {
+
+                for (let i = 0; i < item.quantidade; i++) {
+                    itensVestuario.push(item.produto.preco);
+                }
+            }
+        }
+
+        let totalDescontos = 0;
+
+        if (itensVestuario.length >= 3) {
+            itensVestuario.sort((a, b) => a - b);
+            const qtdGratis = Math.floor(itensVestuario.length / 3);
+            
+            let descontoVestuario = 0;
+
+            for (let i = 0; i < qtdGratis; i++) {
+                descontoVestuario += itensVestuario[i];
+            }
+
+            if (descontoVestuario > 0) {
+                descontos.push({ codigo: "R3", descricao: "Leve 3 Pague 2 (Vestuário)", valor: descontoVestuario });
+                totalDescontos += descontoVestuario;
+            }
+        }
+
+        // --- R2: Cupons ---
+        let cupomSemVip = false;
+        let freteGratis = false;
+
+        if (cupomCodigo) {
+            if (cupomCodigo === "ETIC10") {
+                const valorDesc = subtotal * 0.10;
+                descontos.push({ codigo: "ETIC10", descricao: "Cupom 10% OFF", valor: valorDesc });
+                totalDescontos += valorDesc;
+            } else if (cupomCodigo === "FRETEGRATIS") {
+                freteGratis = true;
+                descontos.push({ codigo: "FRETE", descricao: "Cupom Frete Grátis", valor: 0 });
+            } else if (cupomCodigo === "SEM-VIP") {
+                cupomSemVip = true;
+            } else {
+                throw new Error(`Cupom inválido: ${cupomCodigo}`);
+            }
+        }
+
+        // --- R1: Desconto VIP ---
+        if (cliente.tipo === "VIP" && !cupomSemVip) {
+            const valorVip = subtotal * 0.05;
+            descontos.push({ codigo: "VIP", descricao: "Desconto VIP 5%", valor: valorVip });
+            totalDescontos += valorVip;
+        }
+
+        // --- R4: Desconto por valor alto ---
+        if (subtotal >= 500) {
+            descontos.push({ codigo: "R4", descricao: "Desconto > 500", valor: 30.00 });
+            totalDescontos += 30.00;
+        }
+
+        // Garantir que desconto não é maior que subtotal
+        if (totalDescontos > subtotal) {
+            totalDescontos = subtotal;
+        }
+
+        // --- Frete e Total Final ---
+        let frete = (subtotal > 100 || freteGratis) ? 0 : 15.00; // Assumindo 15 se < 100
+        const totalFinal = subtotal - totalDescontos + totalImpostos + frete;
+
+        return {
+            subtotal: round2(subtotal),
+            descontos: descontos,
+            totalDescontos: round2(totalDescontos),
+            impostoPorCategoria: impostoPorCategoria,
+            totalImpostos: round2(totalImpostos),
+            frete: round2(frete),
+            total: round2(totalFinal)
+        };
+    }
 }
 
 // ==========================================
